@@ -46,13 +46,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // Part of OnMapReadyCallback interface
     override fun onMapReady(googleMap: GoogleMap) {
+        // Initialize the map
         map = googleMap
 
-        // Add a marker in Sydney and move the camera
-        val sydney = LatLng(-34.0, 151.0)
-        // Adds marker and zoop to map
-        map.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        map.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        getCurrentLocation()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray) {
+        if (requestCode == REQUEST_LOCATION) {
+            if (grantResults.size == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getCurrentLocation()
+            } else {
+                Log.e(TAG, "Location permission denied")
+            }
+        }
     }
 
     // Implementation of the fused location
