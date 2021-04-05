@@ -1,18 +1,27 @@
 package com.raywenderlich.placebook
 
+import android.Manifest.*
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-
-import com.google.android.gms.maps.CameraUpdateFactory
+import android.util.Log
+import androidx.core.app.ActivityCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import java.util.jar.Manifest
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var map: GoogleMap
+
+    // Begin fused location client
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,6 +30,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager
                 .findFragmentById(R.id.map) as SupportMapFragment // host main UI; displays map and access to GoogleMap object
         mapFragment.getMapAsync(this)  // sets up map and creating GoogleMap object
+
+        setupLocationClient()
     }
 
     /**
@@ -42,5 +53,50 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Adds marker and zoop to map
         map.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
         map.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+    }
+
+    // Implementation of the fused location
+    private fun setupLocationClient() {
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+    }
+
+    // Implementation for permission of resource hungry fine location
+    private fun requestLocationPermission() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
+    }
+
+    // Get user's current location moves map and centers (with marker)
+    private fun getCurrentLocation() {
+        // 1
+        if (ActivityCompat.checkSelfPermission(this,
+                permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // 2
+            requestLocationPermission()
+        } else {
+            // 3
+            fusedLocationClient.lastLocation.addOnCompleteListener {
+                val location = it.result
+                if (location != null)  {
+                    // 4
+                    val latLng = LatLng(location.latitude, location.longitude)
+                    // 5
+                    map.addMarker(MarkerOptions().position(latLng)
+                        .title("You are here!"))
+                    // 6
+                    val update = CameraUpdateFactory.newLatLngZoom(latLng, 16.0f)
+                    // 7
+                    map.moveCamera(update)
+                } else {
+                    Log.e(TAG, "No location found")
+                }
+            }
+        }
+    }
+
+    companion object {
+        private const val REQUEST_LOCATION = 1  // Code passed to requestPermissions()
+        private const val TAG = "MapsActivity"  // Prints info to Logcat
     }
 }
