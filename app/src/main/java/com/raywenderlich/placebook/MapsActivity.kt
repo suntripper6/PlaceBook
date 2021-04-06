@@ -5,19 +5,28 @@ import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.net.PlacesClient
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PointOfInterest
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import java.util.jar.Manifest
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var map: GoogleMap
+
+    private lateinit var placesClient: PlacesClient
 
     // Begin fused location client
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -31,6 +40,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)  // sets up map and creating GoogleMap object
 
         setupLocationClient()
+        setupPlacesClient()
     }
 
     // Part of OnMapReadyCallback interface
@@ -39,6 +49,51 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         map = googleMap
 
         getCurrentLocation()
+
+        // POI - Points Of Interest - gives info on places tapped (pop-up)
+        map.setOnPoiClickListener { displayPOI(it) }
+    }
+
+    // Creates PlacesClient
+    private fun setupPlacesClient() {
+        Places.initialize(getApplicationContext(), getString(R.string.google_maps_key))
+        placesClient = Places.createClient(this)
+    }
+
+    private fun displayPOI(pointOfInterest: PointOfInterest) {
+        // 1 Retrieve Place ID
+        val placeId = pointOfInterest.placeId
+
+        //2
+        val placeFields = listOf(Place.Field.ID,
+            Place.Field.NAME,
+            Place.Field.PHONE_NUMBER,
+            Place.Field.PHOTO_METADATAS,
+            Place.Field.ADDRESS,
+            Place.Field.LAT_LNG)
+
+        // 3
+        val request = FetchPlaceRequest
+            .builder(placeId, placeFields)
+            .build()
+
+        // 4
+        placesClient.fetchPlace(request).addOnSuccessListener { response ->
+            // 5
+            val place = response.place
+            Toast.makeText(this,
+            "${place.name}, " +
+                    "${place.phoneNumber}",
+                Toast.LENGTH_LONG).show()
+        }.addOnFailureListener { exception ->
+            // 6
+            if (exception is ApiException) {
+                val statusCode = exception.statusCode
+                Log.e(TAG, "Place Not found: " + exception.message + ", " +
+                "statusCode: " + statusCode)
+            }
+        }
+
     }
 
     override fun onRequestPermissionsResult(
