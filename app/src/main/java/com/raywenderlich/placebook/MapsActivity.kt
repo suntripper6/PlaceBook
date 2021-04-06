@@ -6,8 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.core.app.ActivityCompat
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
@@ -33,16 +32,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         setupLocationClient()
     }
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
 
     // Part of OnMapReadyCallback interface
     override fun onMapReady(googleMap: GoogleMap) {
@@ -85,6 +74,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             // 2
             requestLocationPermission()
         } else {
+            map.isMyLocationEnabled = true
             // 3
             fusedLocationClient.lastLocation.addOnCompleteListener {
                 val location = it.result
@@ -92,11 +82,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     // 4
                     val latLng = LatLng(location.latitude, location.longitude)
                     // 5
-                    map.addMarker(MarkerOptions().position(latLng)
-                        .title("You are here!"))
-                    // 6
                     val update = CameraUpdateFactory.newLatLngZoom(latLng, 16.0f)
-                    // 7
+                    // 6
                     map.moveCamera(update)
                 } else {
                     Log.e(TAG, "No location found")
