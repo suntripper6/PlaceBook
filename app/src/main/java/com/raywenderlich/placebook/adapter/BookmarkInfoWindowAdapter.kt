@@ -1,7 +1,9 @@
 package com.raywenderlich.placebook.adapter
 
 import android.app.Activity
+import android.graphics.Bitmap
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
@@ -27,13 +29,16 @@ class BookmarkInfoWindowAdapter(context: Activity) :
         return null
     }
 
-    // 5 Capture titleView and phoneView
+    // 5 Capture titleView, phoneView, imageView
     override fun getInfoContents(marker: Marker): View? {
         val titleView = contents.findViewById<TextView>(R.id.title)
         titleView.text = marker.title ?: ""
 
         val phoneView = contents.findViewById<TextView>(R.id.phone)
         phoneView.text = marker.snippet ?: ""
+
+        val imageView = contents.findViewById<ImageView>(R.id.photo)
+        imageView.setImageBitmap(marker.tag as Bitmap?)
 
         return contents
     }

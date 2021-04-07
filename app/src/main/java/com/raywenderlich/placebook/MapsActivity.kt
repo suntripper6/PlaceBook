@@ -151,14 +151,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
     }
 
-    // Displays marker with place and photo
+    // Displays marker and associates with place and photo
     private fun displayPoiDisplayStep(place:Place, photo: Bitmap?) {
-        map.addMarker(MarkerOptions()
+        val marker = map.addMarker(MarkerOptions()
             .position(place.latLng as LatLng)
             .title(place.name)
             .snippet(place.phoneNumber))
+        marker?.tag = photo
     }
 
+    // Get location permission from user
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
