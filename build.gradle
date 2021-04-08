@@ -3,6 +3,8 @@ buildscript {
     ext {
         ext.kotlin_version = "1.4.32"
         play_services_version = "17.0.0"
+        lifecycle_version = '2.2.0'
+        room_version = '2.2.4'
         repositories {
             google()
             jcenter()

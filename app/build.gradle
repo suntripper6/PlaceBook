@@ -3,6 +3,8 @@ plugins {
     id 'kotlin-android'
 }
 
+apply plugin: 'kotlin-kapt'
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
@@ -43,6 +45,17 @@ dependencies {
     implementation "com.google.android.gms:play-services-location:$play_services_version"
     // Google places API
     implementation "com.google.android.libraries.places:places:2.2.0"
+
+    // Adding Architecture Components - Room, binding, annotations, OH MY!
+    // 1
+    implementation "androidx.activity:activity-ktx:1.1.0"
+    // 2
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    // 3
+    implementation "androidx.room:room-runtime:$room_version"
+    // 4
+    kapt "androidx.room:room-compiler:$room_version"
+
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
