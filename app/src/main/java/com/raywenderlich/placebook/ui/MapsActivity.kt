@@ -40,9 +40,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     // Variable to hold ViewModel
     private val mapsViewModel by viewModels<MapsViewModel>()
 
-    // Variable to store list of bookmark Views
-    private var bookmarks: LiveData<List<BookMarkerView>>? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps) // Looks at layout: activity_maps.xml
@@ -234,12 +231,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
     }
-
-    // Hold data for visible bookmark marker
-    data class BookMarkerView(
-        var id: Long? = null,
-        var location: LatLng = LatLng(0.0, 0.0)
-    )
 
     companion object {
         private const val REQUEST_LOCATION = 1  // Code passed to requestPermissions()

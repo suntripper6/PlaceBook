@@ -4,6 +4,8 @@ import android.app.Application
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.model.Place
 import com.raywenderlich.placebook.repository.BookmarkRepo
 
@@ -13,6 +15,8 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "MapsViewModel"
     // 2
     private var bookmarkRepo: BookmarkRepo = BookmarkRepo(getApplication())
+    // Variable to store list of bookmark Views
+    private var bookmarks: LiveData<List<BookMarkerView>>? = null
     // 3
     fun addBookmarkFromPlace(place: Place, image: Bitmap?) {
         // 4
@@ -28,4 +32,10 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
 
         Log.i(TAG, "New bookmark $newId added to the database.")
     }
+
+    // Hold data for visible bookmark marker
+    data class BookMarkerView(
+        var id: Long? = null,
+        var location: LatLng = LatLng(0.0, 0.0)
+    )
 }
