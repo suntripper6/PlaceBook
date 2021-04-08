@@ -6,7 +6,9 @@ import android.graphics.Bitmap
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.LiveData
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
@@ -16,6 +18,7 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
 
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PointOfInterest
 import com.google.android.libraries.places.api.model.Place
@@ -23,15 +26,22 @@ import com.google.android.libraries.places.api.net.FetchPhotoRequest
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.raywenderlich.placebook.R
 import com.raywenderlich.placebook.adapter.BookmarkInfoWindowAdapter
+import com.raywenderlich.placebook.viewmodel.MapsViewModel
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var map: GoogleMap
-
     private lateinit var placesClient: PlacesClient
-
     // Begin fused location client
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    // Variable to hold ViewModel
+    private val mapsViewModel by viewModels<MapsViewModel>()
+
+    // Variable to store list of bookmark Views
+    private var bookmarks: LiveData<List<BookMarkerView>>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,14 +59,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         // Initialize the map
         map = googleMap
+        setupMapListeners()
+        getCurrentLocation()
+    }
 
+    // User tap to add bookmark
+    private fun setupMapListeners() {
         // Assign adapter
         map.setInfoWindowAdapter(BookmarkInfoWindowAdapter(this))
-
-        getCurrentLocation()
-
         // POI - Points Of Interest - gives info on places tapped (pop-up)
         map.setOnPoiClickListener { displayPOI(it) }
+        // Remove marker from app
+        map.setOnInfoWindowClickListener {
+            handleInfoWindowClick(it)  // adds bookmark to DB
+        }
     }
 
     // Creates PlacesClient
@@ -154,7 +170,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .position(place.latLng as LatLng)
             .title(place.name)
             .snippet(place.phoneNumber))
-        marker?.tag = photo
+        marker?.tag = PlaceInfo(place, photo)
     }
 
     // Get location permission from user
@@ -209,8 +225,27 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    // Handles taps on info window with coroutine
+    private fun handleInfoWindowClick(marker: Marker) {
+        val placeInfo = (marker.tag as PlaceInfo)
+        if(placeInfo.place != null) {
+            GlobalScope.launch {
+                mapsViewModel.addBookmarkFromPlace(placeInfo.place, placeInfo.image)
+            }
+        }
+    }
+
+    // Hold data for visible bookmark marker
+    data class BookMarkerView(
+        var id: Long? = null,
+        var location: LatLng = LatLng(0.0, 0.0)
+    )
+
     companion object {
         private const val REQUEST_LOCATION = 1  // Code passed to requestPermissions()
         private const val TAG = "MapsActivity"  // Prints info to Logcat
     }
+
+    // Internal class to set Place obj and image
+    class PlaceInfo(val place: Place? = null, val image: Bitmap? = null)
 }

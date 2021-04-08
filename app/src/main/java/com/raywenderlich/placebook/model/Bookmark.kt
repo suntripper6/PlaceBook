@@ -3,6 +3,7 @@ package com.raywenderlich.placebook.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+// Single data source
 // 1 DB Entity Class
 @Entity
 // 2 - primary constructor with Primary Key and fields with default values
