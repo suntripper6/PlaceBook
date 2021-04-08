@@ -9,18 +9,16 @@ import android.util.Log
 import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
 
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PointOfInterest
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPhotoRequest
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
@@ -57,6 +55,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         // Initialize the map
         map = googleMap
         setupMapListeners()
+        createBookmarkMarkerObserver()
         getCurrentLocation()
     }
 
@@ -230,6 +229,39 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 mapsViewModel.addBookmarkFromPlace(placeInfo.place, placeInfo.image)
             }
         }
+    }
+
+    // Listen for changes
+    private fun addPlaceMarker(bookmark: MapsViewModel.BookMarkerView): Marker? {
+        val marker = map.addMarker((MarkerOptions()
+            .position(bookmark.location)
+            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+            .alpha(0.8f)))
+
+        marker.tag = bookmark
+
+        return marker
+    }
+
+    // Display all bookmarks
+    private fun displayAllBookmarks(bookmarks: List<MapsViewModel.BookMarkerView>) {
+        for (bookmark in bookmarks) {
+            addPlaceMarker(bookmark)
+        }
+    }
+
+    // Observe changes to bookmarkers in viewmodel
+    private fun createBookmarkMarkerObserver() {
+        // 1
+        mapsViewModel.getBookmarkMarkerViews()?.observe(this,
+        Observer<List<MapsViewModel.BookMarkerView>>{
+            // 2
+            map.clear()
+            // 3
+            it?.let {
+                displayAllBookmarks(it)
+            }
+        })
     }
 
     companion object {
