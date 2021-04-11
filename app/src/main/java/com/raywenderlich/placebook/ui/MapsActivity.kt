@@ -167,6 +167,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .title(place.name)
             .snippet(place.phoneNumber))
         marker?.tag = PlaceInfo(place, photo)
+
+        //*** Instructs map to display Info for maker
+        marker?.showInfoWindow()
     }
 
     // Get location permission from user
@@ -232,7 +235,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     // Listen for changes
-    private fun addPlaceMarker(bookmark: MapsViewModel.BookMarkerView): Marker? {
+    private fun addPlaceMarker(bookmark: MapsViewModel.BookmarkMarkerView): Marker? {
         val marker = map.addMarker((MarkerOptions()
             .position(bookmark.location)
             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
@@ -244,7 +247,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     // Display all bookmarks
-    private fun displayAllBookmarks(bookmarks: List<MapsViewModel.BookMarkerView>) {
+    private fun displayAllBookmarks(bookmarks: List<MapsViewModel.BookmarkMarkerView>) {
         for (bookmark in bookmarks) {
             addPlaceMarker(bookmark)
         }
@@ -254,7 +257,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun createBookmarkMarkerObserver() {
         // 1
         mapsViewModel.getBookmarkMarkerViews()?.observe(this,
-        Observer<List<MapsViewModel.BookMarkerView>>{
+        Observer<List<MapsViewModel.BookmarkMarkerView>>{
             // 2
             map.clear()
             // 3
