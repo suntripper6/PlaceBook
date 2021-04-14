@@ -20,7 +20,7 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
     // 2
     private var bookmarkRepo: BookmarkRepo = BookmarkRepo(getApplication())
     // Variable to store list of bookmark Views
-    private var bookmarks: LiveData<List<BookmarkMarkerView>>? = null
+    private var bookmarks: LiveData<List<BookmarkView>>? = null
     // 3
     fun addBookmarkFromPlace(place: Place, image: Bitmap?) {
         // 4
@@ -42,38 +42,38 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
 
     // Helper method
     //*** add image info
-    private fun bookToMarkerView(bookmark: Bookmark) : MapsViewModel.BookmarkMarkerView {
-        return MapsViewModel.BookmarkMarkerView(bookmark.id,
+    private fun bookmarkToBookmarkView(bookmark: Bookmark) : MapsViewModel.BookmarkView {
+        return MapsViewModel.BookmarkView(bookmark.id,
                         LatLng(bookmark.latitude, bookmark.longitude),
                         bookmark.name,
                         bookmark.phone)
     }
 
     // Maps LiveData updates changes in the db
-    private fun mapBookmarksToMarkerView() {
+    private fun mapBookmarksToBookmarkView() {
         // 1
         bookmarks = Transformations.map(bookmarkRepo.allBookmarks) {
             repoBookMarks ->
             // 2
             repoBookMarks.map { bookmark ->
-                bookToMarkerView(bookmark)
+                bookmarkToBookmarkView(bookmark)
             }
         }
     }
 
-    fun getBookmarkMarkerViews() : LiveData<List<BookmarkMarkerView>>? {
+    fun getBookmarkViews() : LiveData<List<BookmarkView>>? {
         if (bookmarks == null) {
-            mapBookmarksToMarkerView()
+            mapBookmarksToBookmarkView()
         }
         return bookmarks
     }
 
     // Hold data for visible bookmark marker
     //*** Gets image
-    data class BookmarkMarkerView(var id: Long? = null,
-                                  var location: LatLng = LatLng(0.0, 0.0),
-                                  var name: String = "",
-                                  var phone: String = "") {
+    data class BookmarkView(var id: Long? = null,
+                            var location: LatLng = LatLng(0.0, 0.0),
+                            var name: String = "",
+                            var phone: String = "") {
         fun getImage(context: Context): Bitmap? {
             id?.let {
                 return ImageUtils.loadBitMapFromFile(context, Bookmark.generateImageFilename(it))
