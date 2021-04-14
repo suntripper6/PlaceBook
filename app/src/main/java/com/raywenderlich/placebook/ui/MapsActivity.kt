@@ -1,27 +1,28 @@
 package com.raywenderlich.placebook.ui
 
-import android.Manifest.*
+import android.Manifest.permission
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.location.*
-import com.google.android.gms.maps.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.net.PlacesClient
-
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPhotoRequest
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
+import com.google.android.libraries.places.api.net.PlacesClient
 import com.raywenderlich.placebook.R
 import com.raywenderlich.placebook.adapter.BookmarkInfoWindowAdapter
 import com.raywenderlich.placebook.viewmodel.MapsViewModel
@@ -37,6 +38,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     // Variable to hold ViewModel
     private val mapsViewModel by viewModels<MapsViewModel>()
+    //private lateinit var mapsViewModel: MapsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -177,6 +179,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         requestCode: Int,
         permissions: Array<String>,
         grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_LOCATION) {
             if (grantResults.size == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 getCurrentLocation()
@@ -225,19 +228,37 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     // Handles taps on info window with coroutine
+    //*** Saves bookmark or starts bookmark details Activity
     private fun handleInfoWindowClick(marker: Marker) {
-        val placeInfo = (marker.tag as PlaceInfo)
-        if(placeInfo.place != null) {
-            GlobalScope.launch {
-                mapsViewModel.addBookmarkFromPlace(placeInfo.place, placeInfo.image)
+        when (marker.tag) {
+            is MapsActivity.PlaceInfo -> {
+                val placeInfo = (marker.tag as PlaceInfo)
+                if (placeInfo.place != null && placeInfo.image != null) {
+                    GlobalScope.launch {
+                        mapsViewModel.addBookmarkFromPlace(placeInfo.place,
+                                placeInfo.image)
+                    }
+                }
+                marker.remove();
+            }
+            is MapsViewModel.BookmarkMarkerView -> {
+                val bookmarkMarkerView = (marker.tag as
+                        MapsViewModel.BookmarkMarkerView)
+                marker.hideInfoWindow()
+                bookmarkMarkerView.id?.let {
+                    startBookmarkDetails(it)
+                }
             }
         }
     }
 
     // Listen for changes
+    //***Displays info for image
     private fun addPlaceMarker(bookmark: MapsViewModel.BookmarkMarkerView): Marker? {
         val marker = map.addMarker((MarkerOptions()
             .position(bookmark.location)
+            .title(bookmark.name)
+            .snippet(bookmark.phone)
             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
             .alpha(0.8f)))
 
@@ -267,7 +288,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         })
     }
 
+    //***Bookmark details hook
+    private fun startBookmarkDetails(bookmarkId: Long) {
+        val intent = Intent(this, BookmarkDetailsActivity::class.java)
+        intent.putExtra(EXTRA_BOOKMARK_ID, bookmarkId)
+        startActivity(intent)
+    }
+
     companion object {
+        const val EXTRA_BOOKMARK_ID = "com.raywenderlich.placebook.EXTRA_BOOKMARK_ID"
         private const val REQUEST_LOCATION = 1  // Code passed to requestPermissions()
         private const val TAG = "MapsActivity"  // Prints info to Logcat
     }

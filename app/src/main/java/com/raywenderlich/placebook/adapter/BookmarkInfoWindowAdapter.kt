@@ -1,7 +1,6 @@
 package com.raywenderlich.placebook.adapter
 
 import android.app.Activity
-import android.graphics.Bitmap
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -12,7 +11,7 @@ import com.raywenderlich.placebook.ui.MapsActivity
 import com.raywenderlich.placebook.viewmodel.MapsViewModel
 
 // 1 Adapter Hosting Maps Activity
-class BookmarkInfoWindowAdapter(context: Activity) :
+class BookmarkInfoWindowAdapter(val context: Activity) :
     GoogleMap.InfoWindowAdapter {
 
     // 2
@@ -50,7 +49,9 @@ class BookmarkInfoWindowAdapter(context: Activity) :
             is MapsViewModel.BookmarkMarkerView -> {
                 var bookMarkview = marker.tag as
                         MapsViewModel.BookmarkMarkerView
-                // imageView bitmap her
+                // Set imageView bitmap here
+                //***
+                imageView.setImageBitmap(bookMarkview.getImage(context))
             }
         }
 
