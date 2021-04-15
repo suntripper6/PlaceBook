@@ -21,15 +21,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PlaceBook">
 
-        <!--
-             The API key for Google Maps-based APIs is defined as a string resource.
-             (See the file "res/values/google_maps_api.xml").
-             Note that the API key is linked to the encryption key used to sign the APK.
-             You need a different API key for each encryption key, including the release key that is used to
-             sign the APK for publishing.
-             You can define the keys for the debug and release targets in src/debug/ and src/release/.
-        -->
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDHHHMZDd7lm5BdVXRZLK3krf4IIWvH9jI" />
@@ -50,17 +41,15 @@
             android:theme="@style/Theme.PlaceBook.NoActionBar"
             android:windowSoftInputMode="stateHidden">
         </activity>
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.raywenderlich.placebook.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"/>
+        </provider>
     </application>
-
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.PICK" />
-            <data android:mimeType="vnd.android.cursor.dir/image" />
-        </intent>
-    </queries>
-    <queries>
-        <intent>
-            <action android:name="android.media.action.IMAGE_CAPTURE" />
-        </intent>
-    </queries>
+    
 </manifest>

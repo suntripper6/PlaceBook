@@ -29,6 +29,11 @@ class PhotoOptionDialogFragment : DialogFragment() {
         val context = activity as Context
         // 8
         if (canCapture(context)) {
+            options.add("Camera")
+            pickSelectIdx = if (captureSelectIdx == 0) 1 else 0
+        }
+        // 9
+        if (canPick(context)) {
             options.add("Gallery")
             pickSelectIdx = if (captureSelectIdx == 0) 1 else 0
         }

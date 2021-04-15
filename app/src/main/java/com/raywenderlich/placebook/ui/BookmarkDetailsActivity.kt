@@ -1,20 +1,27 @@
 package com.raywenderlich.placebook.ui
 
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.lifecycle.Observer
 import com.raywenderlich.placebook.R
+import com.raywenderlich.placebook.util.ImageUtils
 import com.raywenderlich.placebook.viewmodel.BookmarkDetailsViewModel
 import kotlinx.android.synthetic.main.activity_bookmark_details.*
+import java.io.File
 
 class BookmarkDetailsActivity : AppCompatActivity(),
     PhotoOptionDialogFragment.PhotoOptionDialogListener {
 
     private val bookmarldetailsViewModel by viewModels<BookmarkDetailsViewModel>()
     private var bookmarkDetailsView: BookmarkDetailsViewModel.BookmarkDetailsView? = null
+    private var photoFile: File? = null
 
     override fun onCreate(
         savedInstanceState: Bundle?
@@ -53,6 +60,9 @@ class BookmarkDetailsActivity : AppCompatActivity(),
             placeImage?.let {
                 imageViewPlace.setImageBitmap(placeImage)
             }
+        }
+        imageViewPlace.setOnClickListener {
+            replaceImage()
         }
     }
 
@@ -103,8 +113,31 @@ class BookmarkDetailsActivity : AppCompatActivity(),
     }
     //*** Implement interface
     override fun onCaptureClick() {
-        Toast.makeText(this, "Camera Capture",
-        Toast.LENGTH_SHORT).show()
+        photoFile = null
+        try {
+            // 2
+            photoFile = ImageUtils.createUniqueImageFile(this)
+        } catch (ex: java.io.IOException) {
+            // 3
+            return
+        }
+        // 4
+        photoFile?.let { photoFile ->
+            // 5
+            val photoUri = FileProvider.getUriForFile(this,
+            "com.raywenderlich.placebook.fileprovider", photoFile)
+            // 6
+            val captureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            // 7
+            captureIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, photoUri)
+            // 8
+            val intentActivities = packageManager.queryIntentActivities(captureIntent,
+                PackageManager.MATCH_DEFAULT_ONLY)
+            intentActivities.map { it.activityInfo.packageName }
+                .forEach { grantUriPermission(it, photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)}
+            // 9
+            startActivityForResult(captureIntent, REQUEST_CAPTURE_IMAGE)
+        }
     }
     override fun onPickClick() {
         Toast.makeText(this, "Gallery Pick",
@@ -114,5 +147,10 @@ class BookmarkDetailsActivity : AppCompatActivity(),
     private fun replaceImage() {
         val newFragment = PhotoOptionDialogFragment.newInstance(this)
         newFragment?.show(supportFragmentManager, "photoOptionDialog")
+    }
+
+    // Request code
+    companion object {
+        private const val REQUEST_CAPTURE_IMAGE = 1
     }
 }
