@@ -23,6 +23,12 @@ class BookmarkListAdapter(
         private val mapsActivity: MapsActivity
     ) :
         RecyclerView.ViewHolder(v) {
+        init {
+            v.setOnClickListener {
+                val bookmarkView = itemView.tag as BookmarkView
+                mapsActivity.moveToBookmark(bookmarkView)
+            }
+        }
         val nameTextView: TextView = v.bookmarkNameTextView
         val categoryImageView: ImageView = v.bookmarkIcon
     }
@@ -64,6 +70,7 @@ class BookmarkListAdapter(
     override fun getItemCount(): Int {
         return bookmarkData?.size ?: 0
     }
+
 }
 
 

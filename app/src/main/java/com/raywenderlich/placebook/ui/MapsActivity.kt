@@ -4,6 +4,7 @@ import android.Manifest.permission
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
@@ -46,6 +47,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     // Variable to hold ViewModel
     private val mapsViewModel by viewModels<MapsViewModel>()
     //private lateinit var mapsViewModel: MapsViewModel
+    //***
+    private var markers = HashMap<Long, Marker>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -277,6 +280,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         marker.tag = bookmark
 
+        //***
+        bookmark.id?.let { markers.put(it, marker) }
+
         return marker
     }
 
@@ -294,6 +300,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         Observer<List<MapsViewModel.BookmarkView>>{
             // 2
             map.clear()
+            //***
+            markers.clear()
             // 3
             it?.let {
                 displayAllBookmarks(it)
@@ -303,7 +311,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         })
     }
 
-    //***Bookmark details hook
+    //*** Bookmark details hook
     private fun startBookmarkDetails(bookmarkId: Long) {
         val intent = Intent(this, BookmarkDetailsActivity::class.java)
         intent.putExtra(EXTRA_BOOKMARK_ID, bookmarkId)
@@ -319,12 +327,33 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         toggle.syncState()
     }
 
-    //***BookmarkListAdapter setup
+    //*** BookmarkListAdapter setup
     private fun setupNavigationDrawer() {
         val layoutManager = LinearLayoutManager(this)
         bookmarkRecyclerView.layoutManager = layoutManager
         bookmarkListAdapter = BookmarkListAdapter(null, this)
         bookmarkRecyclerView.adapter = bookmarkListAdapter
+    }
+
+    //*** Zoom map to specific location
+    private fun updateMapToLocation(location: Location) {
+        val latLng = LatLng(location.latitude, location.longitude)
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16.0f))
+    }
+
+    //*** Moves to bookmark
+    fun moveToBookmark(bookmark: MapsViewModel.BookmarkView) {
+        // 1
+        drawerLayout.closeDrawer(drawerView)
+        // 2
+        val marker = markers[bookmark.id]
+        // 3
+        marker?.showInfoWindow()
+        // 4
+        val location = Location("")
+        location.latitude = bookmark.location.latitude
+        location.longitude = bookmark.location.longitude
+        updateMapToLocation(location)
     }
 
     companion object {

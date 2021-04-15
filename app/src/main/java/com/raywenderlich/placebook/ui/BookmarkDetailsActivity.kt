@@ -2,6 +2,7 @@ package com.raywenderlich.placebook.ui
 
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -9,7 +10,8 @@ import com.raywenderlich.placebook.R
 import com.raywenderlich.placebook.viewmodel.BookmarkDetailsViewModel
 import kotlinx.android.synthetic.main.activity_bookmark_details.*
 
-class BookmarkDetailsActivity : AppCompatActivity() {
+class BookmarkDetailsActivity : AppCompatActivity(),
+    PhotoOptionDialogFragment.PhotoOptionDialogListener {
 
     private val bookmarldetailsViewModel by viewModels<BookmarkDetailsViewModel>()
     private var bookmarkDetailsView: BookmarkDetailsViewModel.BookmarkDetailsView? = null
@@ -67,6 +69,9 @@ class BookmarkDetailsActivity : AppCompatActivity() {
                     // Populate fields from bookmark
                     populateFields()
                     populateImageView()
+                    imageViewPlace.setOnClickListener {
+                        replaceImage()
+                    }
                 }
             }
         )
@@ -95,5 +100,19 @@ class BookmarkDetailsActivity : AppCompatActivity() {
             }
             else -> return super.onOptionsItemSelected(item)
         }
+    }
+    //*** Implement interface
+    override fun onCaptureClick() {
+        Toast.makeText(this, "Camera Capture",
+        Toast.LENGTH_SHORT).show()
+    }
+    override fun onPickClick() {
+        Toast.makeText(this, "Gallery Pick",
+        Toast.LENGTH_SHORT).show()
+    }
+
+    private fun replaceImage() {
+        val newFragment = PhotoOptionDialogFragment.newInstance(this)
+        newFragment?.show(supportFragmentManager, "photoOptionDialog")
     }
 }

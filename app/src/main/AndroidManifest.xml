@@ -50,6 +50,17 @@
             android:theme="@style/Theme.PlaceBook.NoActionBar"
             android:windowSoftInputMode="stateHidden">
         </activity>
-
     </application>
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PICK" />
+            <data android:mimeType="vnd.android.cursor.dir/image" />
+        </intent>
+    </queries>
+    <queries>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+    </queries>
 </manifest>
