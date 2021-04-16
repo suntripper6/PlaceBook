@@ -30,7 +30,7 @@ class PhotoOptionDialogFragment : DialogFragment() {
         // 8
         if (canCapture(context)) {
             options.add("Camera")
-            pickSelectIdx = if (captureSelectIdx == 0) 1 else 0
+            captureSelectIdx = 0
         }
         // 9
         if (canPick(context)) {
@@ -47,7 +47,7 @@ class PhotoOptionDialogFragment : DialogFragment() {
                     listener.onCaptureClick()
                 } else if (which == pickSelectIdx) {
                     // 12
-                    listener.onCaptureClick()
+                    listener.onPickClick()
                 }
             }
             .setNegativeButton("Cancel", null)
