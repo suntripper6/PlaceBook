@@ -2,14 +2,14 @@ package com.raywenderlich.placebook.ui
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
-import androidx.lifecycle.Observer
 import com.raywenderlich.placebook.R
 import com.raywenderlich.placebook.util.ImageUtils
 import com.raywenderlich.placebook.viewmodel.BookmarkDetailsViewModel
@@ -72,7 +72,7 @@ class BookmarkDetailsActivity : AppCompatActivity(),
         val bookmarkId = intent.getLongExtra(MapsActivity.Companion.EXTRA_BOOKMARK_ID, 0)
         // 2
         bookmarldetailsViewModel.getBookmark(bookmarkId)?.observe(
-            this, Observer<BookmarkDetailsViewModel.BookmarkDetailsView> {
+            this, androidx.lifecycle.Observer<BookmarkDetailsViewModel.BookmarkDetailsView> {
                 // 3
                 it?.let {
                     bookmarkDetailsView = it
@@ -140,8 +140,16 @@ class BookmarkDetailsActivity : AppCompatActivity(),
         }
     }
     override fun onPickClick() {
-        Toast.makeText(this, "Gallery Pick",
-        Toast.LENGTH_SHORT).show()
+        val pickIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        startActivityForResult(pickIntent, REQUEST_GALLERY_IMAGE)
+    }
+
+    //*** Return downsampled processed image
+    private fun getImageWithAuthority(uri: Uri): Bitmap? {
+        return ImageUtils.decodeUriStreamToSize(uri, resources.getDimensionPixelSize(
+            R.dimen.default_image_width),
+            resources.getDimensionPixelSize(
+                R.dimen.default_image_height), this)
     }
 
     private fun replaceImage() {
@@ -149,8 +157,51 @@ class BookmarkDetailsActivity : AppCompatActivity(),
         newFragment?.show(supportFragmentManager, "photoOptionDialog")
     }
 
+    //*** Saves to bookmark image file
+    private fun updateImage(image: Bitmap) {
+        val bookmarkView = bookmarkDetailsView ?: return
+        imageViewPlace.setImageBitmap(image)
+        bookmarkView.setImage(this, image)
+    }
+
+    //*** Loads downsampled image
+    private fun getImageWithPath(filePath: String): Bitmap? {
+        return ImageUtils.decodeFileToSize(filePath,
+            resources.getDimensionPixelSize(R.dimen.default_image_width),
+            resources.getDimensionPixelSize(R.dimen.default_image_height))
+    }
+
+    //*** Process camera
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        // 1
+        if (resultCode == android.app.Activity.RESULT_OK) {
+            // 2
+            when (requestCode) {
+                // 3
+                REQUEST_CAPTURE_IMAGE -> {
+                    // 4
+                    val photoFile = photoFile ?: return
+                    // 5
+                    val uri = FileProvider.getUriForFile(this,
+                        "com.raywenderlich.placebook.fileprovider", photoFile)
+                    revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    // 6
+                    val image = getImageWithPath(photoFile.absolutePath)
+                    image?.let { updateImage(it) }
+                }
+                REQUEST_GALLERY_IMAGE -> if (data!= null && data.data != null) {
+                    val imageUri = data.data as Uri
+                    val image = getImageWithAuthority(imageUri)
+                    image?.let { updateImage(it) }
+                }
+            }
+        }
+    }
+
     // Request code
     companion object {
         private const val REQUEST_CAPTURE_IMAGE = 1
+        private const val REQUEST_GALLERY_IMAGE = 2
     }
 }

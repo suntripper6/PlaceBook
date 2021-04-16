@@ -3,6 +3,7 @@ package com.raywenderlich.placebook.viewmodel
 import android.app.Application
 import android.content.Context
 import android.graphics.Bitmap
+import android.media.Image
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
@@ -31,6 +32,12 @@ class BookmarkDetailsViewModel(application: Application) :
                     Bookmark.generateImageFilename(it))
             }
             return null
+        }
+        fun setImage(context: Context, image: Bitmap) {
+            id?.let {
+                ImageUtils.saveBitmapToFile(context, image,
+                Bookmark.generateImageFilename(it))
+            }
         }
     }
     // Convert DB bookmark to View bookmark
