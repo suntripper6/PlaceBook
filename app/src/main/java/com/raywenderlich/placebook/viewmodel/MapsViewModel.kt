@@ -31,6 +31,10 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
         bookmark.latitude = place.latLng?.latitude ?: 0.0
         bookmark.phone = place.phoneNumber.toString()
         bookmark.address = place.address.toString()
+
+        // Assigns cat to bookmark
+        bookmark.category = getPlaceCategory(place)
+
         // 5
         val newId = bookmarkRepo.addBookmark(bookmark)
 
@@ -43,10 +47,12 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
     // Helper method
     //*** add image info
     private fun bookmarkToBookmarkView(bookmark: Bookmark) : MapsViewModel.BookmarkView {
-        return MapsViewModel.BookmarkView(bookmark.id,
+        return MapsViewModel.BookmarkView(
+                        bookmark.id,
                         LatLng(bookmark.latitude, bookmark.longitude),
                         bookmark.name,
-                        bookmark.phone)
+                        bookmark.phone,
+                        bookmarkRepo.getCategoryResourceId(bookmark.category))
     }
 
     // Maps LiveData updates changes in the db
@@ -68,12 +74,40 @@ class MapsViewModel(application: Application) : AndroidViewModel(application) {
         return bookmarks
     }
 
+    // Converts Place type to bookmark cat
+    private fun getPlaceCategory(place: Place): String {
+        // 1
+        var cateogry = "Other"
+        var placeTypes = place.types
+
+        placeTypes?.let { placeTypes ->
+            // 2
+            if (placeTypes.size > 0) {
+                // 3
+                val placeType = placeTypes[0]
+                cateogry = bookmarkRepo.placeTypeToCategory(placeType)
+            }
+        }
+        // 4
+        return cateogry
+    }
+    //*** AD-HOC Bookmark
+    fun addBookmark(latLng: LatLng) : Long? {
+        val bookmark = bookmarkRepo.createBookmark()
+        bookmark.name = "Untitled"
+        bookmark.longitude = latLng.longitude
+        bookmark.latitude = latLng.latitude
+        bookmark.category = "Other"
+        return bookmarkRepo.addBookmark(bookmark)
+    }
+
     // Hold data for visible bookmark marker
     //*** Gets image
     data class BookmarkView(var id: Long? = null,
                             var location: LatLng = LatLng(0.0, 0.0),
                             var name: String = "",
-                            var phone: String = "") {
+                            var phone: String = "",
+                            var categoryResourceId: Int? = null) {
         fun getImage(context: Context): Bitmap? {
             id?.let {
                 return ImageUtils.loadBitMapFromFile(context, Bookmark.generateImageFilename(it))

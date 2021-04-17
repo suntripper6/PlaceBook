@@ -3,7 +3,6 @@ package com.raywenderlich.placebook.viewmodel
 import android.app.Application
 import android.content.Context
 import android.graphics.Bitmap
-import android.media.Image
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
@@ -24,7 +23,8 @@ class BookmarkDetailsViewModel(application: Application) :
         var name: String = "",
         var phone: String = "",
         var address: String = "",
-        var notes: String = ""
+        var notes: String = "",
+        var category: String = ""
     ) {
         fun getImage(context: Context): Bitmap? {
             id?.let {
@@ -47,7 +47,8 @@ class BookmarkDetailsViewModel(application: Application) :
             bookmark.name,
             bookmark.phone,
             bookmark.address,
-            bookmark.notes
+            bookmark.notes,
+            bookmark.category
         )
     }
     // Convert live db bookmark to live bookmark view object
@@ -77,6 +78,7 @@ class BookmarkDetailsViewModel(application: Application) :
             bookmark.phone = bookmarkView.phone
             bookmark.address = bookmarkView.address
             bookmark.notes = bookmarkView.notes
+            bookmark.category = bookmarkView.category
         }
         return bookmark
     }
@@ -90,5 +92,13 @@ class BookmarkDetailsViewModel(application: Application) :
             // 3
             bookmark?.let { bookmarkRepo.updateBookmark(it)}
         }
+    }
+
+    fun getCategoryResourceId(category: String): Int? {
+        return bookmarkRepo.getCategoryResourceId(category)
+    }
+
+    fun getCategories(): List<String> {
+        return bookmarkRepo.categories
     }
 }

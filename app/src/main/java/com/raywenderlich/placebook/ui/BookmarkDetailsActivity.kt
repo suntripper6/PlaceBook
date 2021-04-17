@@ -7,6 +7,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
@@ -19,7 +22,7 @@ import java.io.File
 class BookmarkDetailsActivity : AppCompatActivity(),
     PhotoOptionDialogFragment.PhotoOptionDialogListener {
 
-    private val bookmarldetailsViewModel by viewModels<BookmarkDetailsViewModel>()
+    private val bookmarkDetailsViewModel by viewModels<BookmarkDetailsViewModel>()
     private var bookmarkDetailsView: BookmarkDetailsViewModel.BookmarkDetailsView? = null
     private var photoFile: File? = null
 
@@ -71,7 +74,7 @@ class BookmarkDetailsActivity : AppCompatActivity(),
         // 1
         val bookmarkId = intent.getLongExtra(MapsActivity.Companion.EXTRA_BOOKMARK_ID, 0)
         // 2
-        bookmarldetailsViewModel.getBookmark(bookmarkId)?.observe(
+        bookmarkDetailsViewModel.getBookmark(bookmarkId)?.observe(
             this, androidx.lifecycle.Observer<BookmarkDetailsViewModel.BookmarkDetailsView> {
                 // 3
                 it?.let {
@@ -79,6 +82,7 @@ class BookmarkDetailsActivity : AppCompatActivity(),
                     // Populate fields from bookmark
                     populateFields()
                     populateImageView()
+                    poplateCategoryList()
                     imageViewPlace.setOnClickListener {
                         replaceImage()
                     }
@@ -97,7 +101,8 @@ class BookmarkDetailsActivity : AppCompatActivity(),
             bookmarkView.notes = editTextNotes.text.toString()
             bookmarkView.address = editTextAddress.text.toString()
             bookmarkView.phone = editTextPhone.text.toString()
-            bookmarldetailsViewModel.updateBookmark(bookmarkView)
+            bookmarkView.category = spinnerCategory.selectedItem as String
+            bookmarkDetailsViewModel.updateBookmark(bookmarkView)
         }
         finish()
     }
@@ -195,6 +200,48 @@ class BookmarkDetailsActivity : AppCompatActivity(),
                     val image = getImageWithAuthority(imageUri)
                     image?.let { updateImage(it) }
                 }
+            }
+        }
+    }
+
+    private fun poplateCategoryList() {
+        // 1
+        val bookmarkView = bookmarkDetailsView ?: return
+        // 2
+        val resourceId = bookmarkDetailsViewModel.getCategoryResourceId(bookmarkView.category)
+        // 3
+        resourceId?.let { imageViewCategory.setImageResource(it) }
+        // 4
+        val categories = bookmarkDetailsViewModel.getCategories()
+        // 5
+        val adapter = ArrayAdapter(this,
+            android.R.layout.simple_spinner_item, categories)
+        adapter.setDropDownViewResource(
+            android.R.layout.simple_spinner_dropdown_item)
+        // 6
+        spinnerCategory.adapter = adapter
+        // 7
+        val placeCategory = bookmarkView.category
+        spinnerCategory.setSelection(
+            adapter.getPosition(placeCategory))
+
+        //*** Save category
+        spinnerCategory.post {
+            // 2
+            spinnerCategory.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>, view: View,
+                                            position: Int, id: Long) {
+                    // 3
+                    val category = parent.getItemAtPosition(position) as String
+                    val resourceId = bookmarkDetailsViewModel.getCategoryResourceId(category)
+                    resourceId?. let {
+                        imageViewCategory.setImageResource(it)
+                    }
+                }
+                override fun onNothingSelected(parent: AdapterView<*>) {
+                    // Required method but not used.
+                }
+
             }
         }
     }
