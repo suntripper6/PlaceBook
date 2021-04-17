@@ -11,7 +11,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.model.Place
 import com.raywenderlich.placebook.model.Bookmark
 import com.raywenderlich.placebook.repository.BookmarkRepo
-import com.raywenderlich.placebook.util.ImageUtils
+import com.raywenderlich.placebook.utils.ImageUtils
 
 // Interacts with repos (like controller in MVC)
 // 1

@@ -8,7 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import com.raywenderlich.placebook.model.Bookmark
 import com.raywenderlich.placebook.repository.BookmarkRepo
-import com.raywenderlich.placebook.util.ImageUtils
+import com.raywenderlich.placebook.utils.ImageUtils
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -24,7 +24,10 @@ class BookmarkDetailsViewModel(application: Application) :
         var phone: String = "",
         var address: String = "",
         var notes: String = "",
-        var category: String = ""
+        var category: String = "",
+        var longtitude: Double = 0.0,
+        var latitude: Double = 0.0,
+        var placeId: String? = null
     ) {
         fun getImage(context: Context): Bitmap? {
             id?.let {
@@ -48,14 +51,19 @@ class BookmarkDetailsViewModel(application: Application) :
             bookmark.phone,
             bookmark.address,
             bookmark.notes,
-            bookmark.category
+            bookmark.category,
+            bookmark.longitude,
+            bookmark.latitude,
+            bookmark.placeId
         )
     }
     // Convert live db bookmark to live bookmark view object
     private fun mapBookmarkToBookmarkView(bookmarkId: Long) {
         val bookmark = bookmarkRepo.getLiveBookmark(bookmarkId)
         bookmarkDetailsView = Transformations.map(bookmark) {
-            repoBookmark -> bookmarkToBookmarkView(repoBookmark)
+            repoBookmark -> repoBookmark?.let {
+                repoBookmark -> bookmarkToBookmarkView(repoBookmark)
+        }
         }
     }
 
@@ -100,5 +108,16 @@ class BookmarkDetailsViewModel(application: Application) :
 
     fun getCategories(): List<String> {
         return bookmarkRepo.categories
+    }
+
+    fun deleteBookmark(bookmarkDetailsView: BookmarkDetailsView) {
+        GlobalScope.launch {
+            val bookmark = bookmarkDetailsView.id?.let {
+                bookmarkRepo.getBookmark(it)
+            }
+            bookmark?.let {
+                bookmarkRepo.deleteBookmark(it)
+            }
+        }
     }
 }

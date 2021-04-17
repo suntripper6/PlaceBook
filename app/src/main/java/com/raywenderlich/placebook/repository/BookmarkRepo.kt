@@ -10,7 +10,7 @@ import com.raywenderlich.placebook.model.Bookmark
 
 // Uses BookmarkDao from PlaceBookDatabase to access bookmarks in DB (ViewModel interaction)
 // 1
-class BookmarkRepo(context: Context) {
+class BookmarkRepo(private val context: Context) {
     // 2
     private var db = PlaceBookDatabase.getInstance(context)
     private var bookmarkDao: BookmarkDao = db.bookmarkDao()
@@ -28,6 +28,13 @@ class BookmarkRepo(context: Context) {
     fun createBookmark(): Bookmark {
         return Bookmark()
     }
+
+    // Delete bookmark & image
+    fun deleteBookmark(bookmark: Bookmark) {
+        bookmark.deleteImage(context)
+        bookmarkDao.deleteBookmark(bookmark)
+    }
+
     // 5
     val allBookmarks: LiveData<List<Bookmark>>
     get() {

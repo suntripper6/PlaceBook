@@ -4,7 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.raywenderlich.placebook.util.ImageUtils
+import com.raywenderlich.placebook.utils.FileUtils
+import com.raywenderlich.placebook.utils.ImageUtils
 
 // Single data source
 // 1 DB Entity Class
@@ -30,6 +31,12 @@ data class Bookmark(
         //2
         id?.let {
             ImageUtils.saveBitmapToFile(context, image, generateImageFilename(it))
+        }
+    }
+
+    fun deleteImage(context: Context) {
+        id?.let {
+            FileUtils.deleteFile(context, generateImageFilename(it))
         }
     }
     // 3

@@ -1,4 +1,4 @@
-package com.raywenderlich.placebook.util
+package com.raywenderlich.placebook.utils
 
 import android.content.Context
 import android.graphics.Bitmap
